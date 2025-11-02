@@ -6,6 +6,7 @@ import "../utils/Events.sol";
 import "../utils/Errors.sol";
 import "../utils/Constants.sol";
 import "./NFTBase.sol";
+import {console} from "lib/forge-std/src/Script.sol";
 import {NFTMarketplace} from "./NFTMarketplace.sol";
 
 abstract contract NFTListing is NFTBase, NFTStorage {
@@ -22,7 +23,8 @@ abstract contract NFTListing is NFTBase, NFTStorage {
         }
 
         _transfer(msg.sender, address(this), _tokenId);
-IMarketplace m = IMarketplace(address(this));
+
+        IMarketplace m = IMarketplace(address(this));
         s_proceeds[m.getOwner()] += msg.value;
 
         MarketItem storage marketItem = s_idToMarketItem[_tokenId];
@@ -32,7 +34,6 @@ IMarketplace m = IMarketplace(address(this));
         marketItem.startTime = block.timestamp + s_listingDelay;
 
         emit Events.List(_tokenId, msg.sender, _price);
-
     }
 
     function listBatch(uint256[] calldata _tokenIds, uint256[] calldata _prices) public payable {
@@ -49,7 +50,8 @@ IMarketplace m = IMarketplace(address(this));
         if (msg.value != totalListingFee) {
             revert NFTMarketplace__ListingFeeMismatch();
         }
-IMarketplace m = IMarketplace(address(this));
+
+        IMarketplace m = IMarketplace(address(this));
         s_proceeds[m.getOwner()] += msg.value;
 
         for(uint256 i = 0; i < length; ){
@@ -88,7 +90,8 @@ IMarketplace m = IMarketplace(address(this));
         if (msg.value != s_listingFee) {
             revert NFTMarketplace__ListingFeeMismatch();
         }
-IMarketplace m = IMarketplace(address(this));
+
+        IMarketplace m = IMarketplace(address(this));
         s_proceeds[m.getOwner()] += msg.value;
 
         MarketItem storage item = s_idToMarketItem[_tokenId];
@@ -109,11 +112,8 @@ IMarketplace m = IMarketplace(address(this));
 
     function cancelListing(uint256 _tokenId) public {
         MarketItem storage marketItem = s_idToMarketItem[_tokenId];
-        if(ownerOf(_tokenId) != msg.sender){
+        if(marketItem.lister != msg.sender){
             revert NFTMarketplace__CallerNotOwner();
-        }
-        if(marketItem.sold){
-            revert NFTMarketplace__ItemAlreadySold();
         }
 
         _transfer(address(this), msg.sender, _tokenId);

@@ -60,7 +60,7 @@ abstract contract NFTOffers is NFTBase, NFTStorage {
         if(!offer.active){
             revert NFTMarketplace__OfferNotActive();
         }
-        if(ownerOf(_tokenId) != msg.sender){
+        if(item.lister != msg.sender){
             revert NFTMarketplace__CallerNotTokenOwner();
         }
 
@@ -70,7 +70,8 @@ abstract contract NFTOffers is NFTBase, NFTStorage {
 
         address lister = s_idToMarketItem[_tokenId].lister;
         uint256 priceHaveRoyalty = offer.price - royaltyAmount - feeMarketAmount;
-IMarketplace m = IMarketplace(address(this));
+
+        IMarketplace m = IMarketplace(address(this));
         s_proceeds[royaltyReceiver] += royaltyAmount;
         s_proceeds[m.getOwner()] += feeMarketAmount;
         s_proceeds[lister] += priceHaveRoyalty;

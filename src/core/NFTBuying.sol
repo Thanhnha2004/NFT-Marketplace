@@ -70,7 +70,8 @@ abstract contract NFTBuying is NFTBase, NFTStorage {
         item.owner = payable(msg.sender);
         item.sold = true;
         s_itemsSold += 1;
-IMarketplace m = IMarketplace(address(this));
+        
+        IMarketplace m = IMarketplace(address(this));
         s_proceeds[royaltyReceiver] += royaltyAmount;
         s_proceeds[m.getOwner()] += feeMarketAmount;
         s_proceeds[lister] += priceHaveRoyalty;

@@ -26,7 +26,8 @@ abstract contract NFTAuctions is NFTBase, NFTStorage {
         }
 
         _transfer(msg.sender, address(this), _tokenId);
-IMarketplace m = IMarketplace(address(this));
+        
+        IMarketplace m = IMarketplace(address(this));
         s_proceeds[m.getOwner()] += msg.value;
 
         item.owner = payable(address(this));
@@ -102,7 +103,8 @@ IMarketplace m = IMarketplace(address(this));
             item.sold = true;
             item.price = auction.highestBid;
             s_itemsSold += 1;
-IMarketplace m = IMarketplace(address(this));
+
+            IMarketplace m = IMarketplace(address(this));
             s_proceeds[royaltyReceiver] += royaltyAmount;
             s_proceeds[m.getOwner()] += feeMarketAmount;
             s_proceeds[auction.lister] += priceHaveRoyalty;
@@ -126,7 +128,7 @@ IMarketplace m = IMarketplace(address(this));
         if(!auction.active) {
             revert NFTMarketplace__AuctionNotActive();
         }
-        if(ownerOf(_tokenId) != msg.sender) {
+        if(auction.lister != msg.sender) {
             revert NFTMarketplace__CallerNotTokenOwner();
         }
         if (auction.highestBidder != address(0)) {
