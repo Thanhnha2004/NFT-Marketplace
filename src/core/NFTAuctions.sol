@@ -8,8 +8,14 @@ import "../utils/Constants.sol";
 import "./NFTBase.sol";
 import {NFTMarketplace} from "./NFTMarketplace.sol";
 
+/// @title NFT Auctions Module
+/// @notice Handles English-style auctions with anti-sniping
 abstract contract NFTAuctions is NFTBase, NFTStorage {
 
+    /// @notice Create an auction for your NFT
+    /// @param _tokenId Token ID to auction
+    /// @param _startingPrice Minimum starting bid
+    /// @param _duration Auction duration in seconds
     function createAuction(uint256 _tokenId, uint256 _startingPrice, uint256 _duration) public payable {
         MarketItem storage item = s_idToMarketItem[_tokenId];
         if (_startingPrice == 0) {
@@ -46,6 +52,8 @@ abstract contract NFTAuctions is NFTBase, NFTStorage {
         emit Events.CreateAuction(_tokenId, msg.sender, _startingPrice, block.timestamp + _duration);
     }
 
+    /// @notice Place a bid on an active auction
+    /// @param _tokenId Token ID of the auction
     function placeBid(uint256 _tokenId) public payable {
         Auction storage auction = s_auctions[_tokenId];
         if(!auction.active){
@@ -82,6 +90,8 @@ abstract contract NFTAuctions is NFTBase, NFTStorage {
         emit Events.PlaceBid(_tokenId, msg.sender, msg.value);
     }
 
+    /// @notice End an auction and finalize the sale
+    /// @param _tokenId Token ID of the auction
     function endAuction(uint256 _tokenId) public {
         Auction storage auction = s_auctions[_tokenId];
         MarketItem storage item = s_idToMarketItem[_tokenId];
@@ -123,6 +133,8 @@ abstract contract NFTAuctions is NFTBase, NFTStorage {
         }
     }
 
+    /// @notice Cancel an auction with no bids
+    /// @param _tokenId Token ID of the auction
     function cancelAuction(uint256 _tokenId) public{
         Auction storage auction = s_auctions[_tokenId];
         if(!auction.active) {

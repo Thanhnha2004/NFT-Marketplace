@@ -33,3 +33,6 @@ pragma solidity ^0.8.26;
     error NFTMarketplace__IncorrectPaymentAmount();
     error NFTMarketplace__AuctionAlreadyHasBids();
     error NFTMarketplace__VRRequestFailed();
+    error VRFHandler__Unauthorized();
+    error NFTMarketplace__ItemNotListed();
+    error NFTMarketplace__Unauthorized();

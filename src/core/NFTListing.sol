@@ -9,8 +9,13 @@ import "./NFTBase.sol";
 import {console} from "lib/forge-std/src/Script.sol";
 import {NFTMarketplace} from "./NFTMarketplace.sol";
 
+/// @title NFT Listing Module
+/// @notice Handles listing, relisting, and canceling NFT listings
 abstract contract NFTListing is NFTBase, NFTStorage {
     
+    /// @notice List an NFT for sale
+    /// @param _tokenId Token ID to list
+    /// @param _price Sale price in wei    
     function list(uint256 _tokenId, uint256 _price) public payable {
         if (_price == 0) {
             revert NFTMarketplace__AmountMustBeAboveZero();
@@ -36,6 +41,9 @@ abstract contract NFTListing is NFTBase, NFTStorage {
         emit Events.List(_tokenId, msg.sender, _price);
     }
 
+    /// @notice List multiple NFTs in a single transaction
+    /// @param _tokenIds Array of token IDs
+    /// @param _prices Array of corresponding prices
     function listBatch(uint256[] calldata _tokenIds, uint256[] calldata _prices) public payable {
         uint256 length = _tokenIds.length;
         address owner = msg.sender;
@@ -79,6 +87,9 @@ abstract contract NFTListing is NFTBase, NFTStorage {
         }
     }
 
+    /// @notice Relist an owned NFT for sale
+    /// @param _tokenId Token ID to relist
+    /// @param _price New sale price
     function reSell(uint256 _tokenId, uint256 _price) public payable {
         address payable owner = payable(msg.sender);
         if(ownerOf(_tokenId) != owner){
@@ -110,10 +121,15 @@ abstract contract NFTListing is NFTBase, NFTStorage {
         emit Events.ReSell(_tokenId, owner, _price);
     }
 
+    /// @notice Cancel an active listing
+    /// @param _tokenId Token ID to cancel
     function cancelListing(uint256 _tokenId) public {
         MarketItem storage marketItem = s_idToMarketItem[_tokenId];
         if(marketItem.lister != msg.sender){
             revert NFTMarketplace__CallerNotOwner();
+        }
+        if(marketItem.sold){
+            revert NFTMarketplace__ItemAlreadySold();
         }
 
         _transfer(address(this), msg.sender, _tokenId);

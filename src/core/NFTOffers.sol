@@ -8,8 +8,13 @@ import "../utils/Constants.sol";
 import "./NFTBase.sol";
 import {NFTMarketplace} from "./NFTMarketplace.sol";
 
+/// @title NFT Offers Module
+/// @notice Handles bidding system for listed NFTs
 abstract contract NFTOffers is NFTBase, NFTStorage {
 
+    /// @notice Place an offer on an NFT
+    /// @param _tokenId Token ID to bid on
+    /// @param _price Offer amount in wei
     function placeOffer(uint256 _tokenId, uint256 _price) public payable {
         address offer = msg.sender;
 
@@ -18,6 +23,11 @@ abstract contract NFTOffers is NFTBase, NFTStorage {
         }
         if (msg.value != _price) {
             revert NFTMarketplace__IncorrectPaymentAmount();
+        }
+
+        MarketItem storage item = s_idToMarketItem[_tokenId];
+        if(item.lister == address(0) || item.sold) {
+            revert NFTMarketplace__ItemNotListed();
         }
 
         Offer storage existingOffer = s_offersByToken[_tokenId][offer];
@@ -41,6 +51,8 @@ abstract contract NFTOffers is NFTBase, NFTStorage {
         emit Events.PlaceOffer(_tokenId, msg.sender, _price);
     }
 
+    /// @notice Cancel your active offer
+    /// @param _tokenId Token ID to cancel offer for
     function cancelOffer(uint256 _tokenId) public {
         Offer storage offer = s_offersByToken[_tokenId][msg.sender];
 
@@ -54,6 +66,9 @@ abstract contract NFTOffers is NFTBase, NFTStorage {
         emit Events.CancelOffer(_tokenId, msg.sender, offer.price);
     }
 
+    /// @notice Accept an offer on your listed NFT
+    /// @param _tokenId Token ID
+    /// @param bidder Address of the bidder
     function acceptOffer(uint256 _tokenId, address bidder) public {
         Offer storage offer = s_offersByToken[_tokenId][bidder];
         MarketItem storage item = s_idToMarketItem[_tokenId];

@@ -3,7 +3,7 @@ pragma solidity ^0.8.26;
 
 library Constants {
     uint256 public constant ENTRANCE_FEE = 0.01 ether;
-    uint96 public constant ROYALTY_FEE = 1000; // 5%
+    uint96 public constant ROYALTY_FEE = 1000; // 10%
     uint32 public constant CALLBACK_GAS_LIMIT = 500000;
     uint256 public constant MARKETPLACE_FEE_DENOM = 1000;
     uint32 public constant AUCTION_EXTENSION = 600; // 10 phút

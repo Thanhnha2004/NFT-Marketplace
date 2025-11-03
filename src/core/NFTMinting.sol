@@ -10,11 +10,15 @@ import "./NFTBase.sol";
 import "./NFTMarketplace.sol";
 import {Strings} from "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
 
+/// @title NFT Minting Module
+/// @notice Handles random NFT minting using Chainlink VRF
 abstract contract NFTMinting is NFTBase, NFTStorage {
     using Strings for uint256;
 
     address public vrfHandler;
 
+    /// @notice Mint a new random NFT
+    /// @dev Requests random words from VRF and pays mint fee
     function mint() public payable {
         IMarketplace m = IMarketplace(address(this));
 
@@ -40,7 +44,14 @@ abstract contract NFTMinting is NFTBase, NFTStorage {
         emit Events.Mint(requestId, currentId, msg.sender);
     }
 
+    /// @notice Fulfill random mint request from VRF
+    /// @param requestId VRF request ID
+    /// @param randomWords Array of random values
     function fulfillRandomMint(uint256 requestId, uint256[] calldata randomWords) external {
+        if(msg.sender != vrfHandler) {
+            revert NFTMarketplace__Unauthorized();
+        }
+
         address nftOwner = s_requestToSender[requestId];
         uint256 tokenId = s_requestToTokenId[requestId];
 
@@ -80,11 +91,16 @@ abstract contract NFTMinting is NFTBase, NFTStorage {
         emit Events.RandomNFT(nftOwner, tokenId, tokenURI(tokenId));
     }
 
+    /// @notice Update the base URI for token metadata
+    /// @param newBaseURI New base URI string
     function updateBaseURI(string memory newBaseURI) public {
         s_baseURI = newBaseURI;
         emit Events.BaseURIUpdated(newBaseURI);
     }
 
+    /// @notice Convert rarity enum to string
+    /// @param rarity Rarity enum value
+    /// @return String representation of rarity
     function rarityToString(Rarity rarity) public view returns (string memory) {
         return s_rarityToString[rarity];
     }

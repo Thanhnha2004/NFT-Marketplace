@@ -8,6 +8,8 @@ import "../utils/Constants.sol";
 import "./NFTBase.sol";
 import {NFTMarketplace} from "./NFTMarketplace.sol";
 
+/// @title NFT Buying Module
+/// @notice Handles NFT purchases with royalty and fee distribution
 abstract contract NFTBuying is NFTBase, NFTStorage {
     
     // function buy(uint256 _tokenId) external payable {
@@ -48,6 +50,8 @@ abstract contract NFTBuying is NFTBase, NFTStorage {
     //     emit Buy(_tokenId, msg.sender, priceHaveRoyalty);
     // }
 
+    /// @notice Buy a listed NFT
+    /// @param _tokenId Token ID to purchase
     function buy(uint256 _tokenId) public payable {
         MarketItem storage item = s_idToMarketItem[_tokenId];
         uint256 price = s_idToMarketItem[_tokenId].price;
@@ -81,6 +85,8 @@ abstract contract NFTBuying is NFTBase, NFTStorage {
         emit Events.Buy(_tokenId, msg.sender, price);
     }
 
+    /// @notice Buy multiple NFTs in one transaction
+    /// @param _tokenIds Array of token IDs to purchase
     function buyBatch(uint256[] calldata _tokenIds) public payable {
         uint256 length = _tokenIds.length;
         uint256 totalPrice;
@@ -116,17 +122,18 @@ abstract contract NFTBuying is NFTBase, NFTStorage {
 
         for (uint256 i = 0; i < length; ) {
             uint256 tokenId = _tokenIds[i];
-            uint256 price = s_idToMarketItem[tokenId].price;
+            MarketItem storage item = s_idToMarketItem[tokenId];
+            uint256 price = item.price;
 
             (address royaltyReceiver, uint256 royaltyAmount) = royaltyInfo(tokenId, price);
 
             uint256 feeMarketAmount = (price * s_marketplaceFeeBP) / Constants.MARKETPLACE_FEE_DENOM;
 
-            address lister = s_idToMarketItem[tokenId].lister;
+            address lister = item.lister;
             uint256 priceHaveRoyalty = price - royaltyAmount - feeMarketAmount;
 
-            s_idToMarketItem[tokenId].owner = payable(buyer);
-            s_idToMarketItem[tokenId].sold = true;
+            item.owner = payable(buyer);
+            item.sold = true;
             unchecked { s_itemsSold++; }
 
             s_proceeds[royaltyReceiver] += royaltyAmount;
